@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="socialmediaADT" />
+		<Option title="106124124" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -31,9 +31,27 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="Makefile" />
+		<Unit filename="README.md" />
+		<Unit filename="comment.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="comment.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="platform.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="platform.h" />
+		<Unit filename="post.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="post.h" />
+		<Unit filename="reply.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="reply.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
