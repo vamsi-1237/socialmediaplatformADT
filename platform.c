@@ -3,10 +3,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 Platform platform = {NULL, NULL};
 
-// Helper: get nth recent post (1-based)
+// struct for the Post View Log (tracks viewed posts in reverse chronological order)
+typedef struct postLog{
+    Post* post;
+    struct postLog* next;
+} postLog;
+
+
+postLog* viewLogHead = NULL;
+static void updateViewLog(Post *p) {
+    if (!p) return;
+
+    postLog *prev = NULL, *curr = viewLogHead;
+
+    while (curr && curr->post != p) {
+        prev = curr;
+        curr = curr->next;
+    }
+
+    if (curr) {
+        // post found..it's already in the log.
+        // if it's not the head, move it to the head.
+        if (prev) {
+            prev->next = curr->next;
+            curr->next = viewLogHead;
+            viewLogHead = curr;
+        }
+        // if prev is NULL, it is already the head, so no change needed.
+    }
+    else {
+
+        postLog *newNode = (postLog*)malloc(sizeof(postLog));
+        if (!newNode) {
+            fprintf(stderr, "Memory allocation failed for postLog node.\n");
+            return;
+        }
+
+        newNode->post = p;
+        newNode->next = viewLogHead;
+        viewLogHead = newNode;
+    }
+}
+
 static Post* getPost(int n) {
+    if (n <= 0) return NULL; // Handle invalid input
     Post *p = platform.posts;
     int count = 1;
     while (p && count < n) {
@@ -16,9 +59,26 @@ static Post* getPost(int n) {
     return p;
 }
 
-// Helper function: get the n-th recent comment of a post
+bool addPost(const char *username, const char *caption) {
+    Post *p = createPost(username, caption);
+
+    if (!p) {
+        printf("Memory allocation failed for new Post.\n");
+        return false;
+    }
+    p->next = platform.posts;
+    platform.posts = p;
+
+
+    if (!platform.lastViewedPost)
+        platform.lastViewedPost = p;
+
+    return true;
+}
+
+
 static Comment* getComment(Post *p, int n) {
-    if (!p) return NULL;
+    if (!p || n <= 0) return NULL; // Handle invalid input
 
     Comment *c = p->comments;
     int count = 1;
@@ -36,24 +96,16 @@ Platform* createPlatform() {
     return &platform;
 }
 
-bool addPost(const char *username, const char *caption) {
-    Post *p = createPost(username, caption);
-    if (!p) return false;
-
-    p->next = platform.posts;
-    platform.posts = p;
-
-    if (!platform.lastViewedPost)
-        platform.lastViewedPost = p;
-
-    return true;
-}
-
 bool deletePost(int n) {
     if (!platform.posts) {
         printf("Error: No posts available.\n");
         return false;
     }
+    if (n <= 0) {
+        printf("Error: Post number must be 1 or greater.\n");
+        return false;
+    }
+
 
     Post *prev = NULL, *curr = platform.posts;
     int count = 1;
@@ -68,16 +120,37 @@ bool deletePost(int n) {
         return false;
     }
 
+    Post *deleted_post = curr;
+
+
     if (prev)
         prev->next = curr->next;
     else
         platform.posts = curr->next;
 
-    if (platform.lastViewedPost == curr)
-        platform.lastViewedPost = platform.posts;
 
-    curr->next = NULL;
-    freePost(curr);
+    if (platform.lastViewedPost == deleted_post) {
+        platform.lastViewedPost = platform.posts;
+    }
+
+    postLog *log_prev = NULL, *log_curr = viewLogHead;
+    while (log_curr && log_curr->post != deleted_post) {
+        log_prev = log_curr;
+        log_curr = log_curr->next;
+    }
+
+    if (log_curr) {
+
+        if (log_prev)
+            log_prev->next = log_curr->next;
+        else
+            viewLogHead = log_curr->next;
+
+        free(log_curr);
+    }
+
+    deleted_post->next = NULL;
+    freePost(deleted_post);
 
     printf("Post %d deleted successfully.\n", n);
     return true;
@@ -89,7 +162,13 @@ Post* viewPost(int n) {
         printf("Post %d does not exist.\n", n);
         return NULL;
     }
+
+
     platform.lastViewedPost = p;
+
+
+    updateViewLog(p);
+
     return p;
 }
 
@@ -100,7 +179,7 @@ Post* nextPost() {
     }
 
     if (!platform.lastViewedPost->next) {
-        printf("Next post does not exist.\n");
+        printf("Next post does not exist (end of list).\n");
         return platform.lastViewedPost;
     }
 
@@ -122,14 +201,13 @@ Post* previousPost() {
     }
 
     if (!prev) {
-        printf("Previous post does not exist.\n");
+        printf("Previous post does not exist (already at the newest post).\n");
         return platform.lastViewedPost;
     }
 
     platform.lastViewedPost = prev;
     return platform.lastViewedPost;
 }
-
 
 Post* currPost() {
     if (!platform.lastViewedPost)
@@ -139,10 +217,16 @@ Post* currPost() {
 
 bool addComment(const char *username, const char *content) {
     Post *p = currPost();
-    if (!p) return false;
+    if (!p) {
+        printf("No post selected to add comment to.\n");
+        return false;
+    }
 
     Comment *c = createComment(username, content);
-    if (!c) return false;
+    if (!c) {
+        printf("Failed to create new comment.\n");
+        return false;
+    }
 
     c->next = NULL;
     if (!p->comments)
@@ -159,6 +243,10 @@ bool deleteComment(int n) {
     Post *p = currPost();
     if (!p) {
         printf("No post selected to delete comment from.\n");
+        return false;
+    }
+    if (n <= 0) {
+        printf("Error: Comment number must be 1 or greater.\n");
         return false;
     }
 
@@ -178,6 +266,7 @@ bool deleteComment(int n) {
     if (prev) prev->next = curr->next;
     else p->comments = curr->next;
 
+    // Clean up memory
     curr->next = NULL;
     freeComment(curr);
     return true;
@@ -194,6 +283,10 @@ bool addReply(const char *username, const char *content, int n) {
         printf("No post selected to add reply.\n");
         return false;
     }
+    if (n <= 0) {
+        printf("Error: Comment number must be 1 or greater.\n");
+        return false;
+    }
 
     Comment *c = getComment(p, n);
     if (!c) {
@@ -202,9 +295,13 @@ bool addReply(const char *username, const char *content, int n) {
     }
 
     Reply *r = createReply(username, content);
-    if (!r) return false;
+    if (!r) {
+        fprintf(stderr, "Failed to create new reply.\n");
+        return false;
+    }
 
     r->next = NULL;
+    // Replies are added to the END of the list
     if (!c->replies) c->replies = r;
     else {
         Reply *temp = c->replies;
@@ -218,6 +315,10 @@ bool deleteReply(int n, int m) {
     Post *p = currPost();
     if (!p) {
         printf("No post selected to delete reply.\n");
+        return false;
+    }
+    if (n <= 0 || m <= 0) {
+        printf("Error: Comment and reply numbers must be 1 or greater.\n");
         return false;
     }
 
@@ -247,5 +348,3 @@ bool deleteReply(int n, int m) {
     freeReply(curr);
     return true;
 }
-
-

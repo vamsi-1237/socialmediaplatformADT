@@ -1,16 +1,19 @@
 # depslib dependency file v1.0
-1761156021 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\main.c
+1761587845 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"platform.h"
+	"post.h"
+	"comment.h"
+	"reply.h"
 
 1761116808 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\comment.c
 	"comment.h"
 	<stdlib.h>
 	<string.h>
 
-1761120421 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\platform.c
+1761587526 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\platform.c
 	"platform.h"
 	<stdio.h>
 	<stdlib.h>

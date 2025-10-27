@@ -2,175 +2,134 @@
 #include <stdlib.h>
 #include <string.h>
 #include "platform.h"
+#include "post.h"
+#include "comment.h"
+#include "reply.h"
 
-#define MAX_LEN 100
+#define MAX_LINE_LENGTH 256
 
-int validInput(int min, int max) {
-    int choice;
-    if (scanf("%d", &choice) != 1) {
-        while (getchar() != '\n'); // clear buffer
-        printf("Invalid input. Please enter a number between %d and %d.\n", min, max);
-        return -1;
+void print_post_info(Post *p) {
+    if (p) {
+        printf("%s %s\n", p->username, p->caption);
     }
-    if (choice < min || choice > max) {
-        printf("Input out of range (%d-%d). Returning to main menu.\n", min, max);
-        return -1;
-    }
-    getchar(); // consume newline
-    return choice;
 }
 
-void printMenu() {
-    printf("\n--- Social Media Platform ---\n");
-    printf("1. Add post\n");
-    printf("2. Delete post\n");
-    printf("3. View post\n");
-    printf("4. Current post\n");
-    printf("5. Previous post\n");
-    printf("6. Next post\n");
-    printf("7. Add comment\n");
-    printf("8. Delete comment\n");
-    printf("9. View comments\n");
-    printf("10. Add reply\n");
-    printf("11. Delete reply\n");
-    printf("0. Exit\n");
-    printf("Choose an action: ");
+void print_comments_recursive(Post *p) {
+    if (!p) {
+        return;
+    }
+
+    Comment *c = p->comments;
+    while (c) {
+
+        printf("%s %s\n", c->username, c->content);
+        Reply *r = c->replies;
+        while (r) {
+            printf("%s %s\n", r->username, r->content);
+            r = r->next;
+        }
+
+        c = c->next;
+    }
 }
 
-int main() {
-    createPlatform();
+int main()
+{
+    char line[MAX_LINE_LENGTH];
+    char *command;
+    Post *p;
 
-    char username[MAX_LEN];
-    char content[MAX_LEN];
-    char caption[MAX_LEN];
-    int choice, n, m;
 
-    while (1) {
-        printMenu();
-        choice = validInput(0, 11);
-        if (choice == -1) continue;
+    const char *delim = " \t\n";
+    printf("Enter double space to end input:\n");
+    while (fgets(line, MAX_LINE_LENGTH, stdin) != NULL) {
 
-        switch(choice) {
-            case 1:
-                printf("Enter username: ");
-                fgets(username, MAX_LEN, stdin);
-                username[strcspn(username, "\n")] = 0;
 
-                printf("Enter caption: ");
-                fgets(caption, MAX_LEN, stdin);
-                caption[strcspn(caption, "\n")] = 0;
+        line[strcspn(line, "\r\n")] = 0;
 
-                if (addPost(username, caption))
-                    printf("Post added successfully.\n");
-                else
-                    printf("Failed to add post.\n");
-                break;
 
-            case 2:
-                printf("Enter post number to delete: ");
-                n = validInput(1, 1000);
-                if (n == -1) break;
-                deletePost(n);
-                break;
+        command = strtok(line, delim);
 
-            case 3:
-                printf("Enter post number to view: ");
-                n = validInput(1, 1000);
-                if (n == -1) break;
-                if (viewPost(n))
-                    displayPost(currPost());
-                break;
+        if(strcmp(command,"  ") == 0){
+            break;
+        }
 
-            case 4:
-                if (currPost())
-                    displayPost(currPost());
-                else
-                    printf("No posts available.\n");
-                break;
+        if (command == NULL) {
+            continue;
+        }
 
-            case 5:
-                if (previousPost())
-                    displayPost(currPost());
-                break;
+        if (strcmp(command, "create_platform") == 0) {
+            createPlatform();
+        }
 
-            case 6:
-                if (nextPost())
-                    displayPost(currPost());
-                break;
 
-            case 7:
-                printf("Enter username: ");
-                fgets(username, MAX_LEN, stdin);
-                username[strcspn(username, "\n")] = 0;
-
-                printf("Enter content: ");
-                fgets(content, MAX_LEN, stdin);
-                content[strcspn(content, "\n")] = 0;
-
-                addComment(username, content);
-                break;
-
-            case 8:
-                printf("Enter comment number to delete: ");
-                n = validInput(1, 1000);
-                if (n == -1) break;
-                deleteComment(n);
-                break;
-
-            case 9: {
-                Comment *c = viewComments();
-                if (!c) {
-                    printf("No comments available.\n");
-                    break;
-                }
-                while (c) {
-                    printf("%s %s\n", c->username, c->content);
-                    Reply *r = c->replies;
-                    while (r) {
-                        printf("  %s %s\n", r->username, r->content);
-                        r = r->next;
-                    }
-                    c = c->next;
-                }
-                break;
+        else if (strcmp(command, "add_post") == 0) {
+            char *user = strtok(NULL, delim);
+            char *caption = strtok(NULL, delim);
+            if (user && caption) {
+                addPost(user, caption);
             }
+        }
+        else if (strcmp(command, "delete_post") == 0) {
+            char *n_str = strtok(NULL, delim);
+            if (n_str) {
+                deletePost(atoi(n_str));
+            }
+        }
+        else if (strcmp(command, "view_post") == 0) {
+            char *n_str = strtok(NULL, delim);
+            if (n_str) {
+                p = viewPost(atoi(n_str));
+                print_post_info(p);
+            }
+        }
+        else if (strcmp(command, "current_post") == 0) {
+            p = currPost();
+            print_post_info(p);
+        }
+        else if (strcmp(command, "previous_post") == 0) {
+            p = previousPost();
+            print_post_info(p);
+        }
+        else if (strcmp(command, "next_post") == 0) {
+            p = nextPost();
+            print_post_info(p);
+        }
 
-            case 10:
-                printf("Enter username: ");
-                fgets(username, MAX_LEN, stdin);
-                username[strcspn(username, "\n")] = 0;
 
-                printf("Enter reply content: ");
-                fgets(content, MAX_LEN, stdin);
-                content[strcspn(content, "\n")] = 0;
-
-                printf("Enter comment number to reply to: ");
-                n = validInput(1, 1000);
-                if (n == -1) break;
-
-                addReply(username, content, n);
-                break;
-
-            case 11:
-                printf("Enter comment number: ");
-                n = validInput(1, 1000);
-                if (n == -1) break;
-
-                printf("Enter reply number to delete: ");
-                m = validInput(1, 1000);
-                if (m == -1) break;
-
-                deleteReply(n, m);
-                break;
-
-            case 0:
-                printf("Exiting...\n");
-                exit(0);
-
-            default:
-                printf("Invalid choice. Try again.\n");
+        else if (strcmp(command, "add_comment") == 0) {
+            char *user = strtok(NULL, delim);
+            char *content = strtok(NULL, delim);
+            if (user && content) {
+                addComment(user, content);
+            }
+        }
+        else if (strcmp(command, "delete_comment") == 0) {
+            char *n_str = strtok(NULL, delim);
+            if (n_str) {
+                deleteComment(atoi(n_str));
+            }
+        }
+        else if (strcmp(command, "view_comments") == 0) {
+            print_comments_recursive(currPost());
+        }
+        else if (strcmp(command, "add_reply") == 0) {
+            char *user = strtok(NULL, delim);
+            char *content = strtok(NULL, delim);
+            char *n_str = strtok(NULL, delim);
+            if (user && content && n_str) {
+                addReply(user, content, atoi(n_str));
+            }
+        }
+        else if (strcmp(command, "delete_reply") == 0) {
+            char *n_str = strtok(NULL, delim);
+            char *m_str = strtok(NULL, delim);
+            if (n_str && m_str) {
+                deleteReply(atoi(n_str), atoi(m_str));
+            }
         }
     }
+
 
     return 0;
 }
