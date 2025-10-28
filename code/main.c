@@ -105,7 +105,7 @@ int main() {
         }
 
         else if (strcmp(command, "view_comments") == 0) {
-            print_comments_recursive(currPost());
+            view_all_comments(currPost());
         }
 
         else if (strcmp(command, "add_reply") == 0) {

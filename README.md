@@ -1,8 +1,3 @@
-# Social Media ADT (Abstract Data Type) Console Application
-
-This project implements a basic social media platform's core data structures (Posts, Comments, Replies) and operational logic using the C programming language. It is designed around the concept of an Abstract Data Type (ADT), ensuring clear separation between data structure definitions and application-level functions.
-
-A key feature is the Most Recently Viewed Post Log, which tracks the order in which posts are accessed. All program output is buffered in memory and printed only after the user signals the end of input.
 
 ##  Project Structure and File Descriptions
 
@@ -20,15 +15,16 @@ The application is modularized into dedicated files for each entity, promoting c
 
 This project uses a `Makefile` and is intended to be built using **GCC** and the **`make`** utility in a Unix-like environment (**MinGW64/Git Bash** on Windows, Linux, or macOS).
 
-### 1. Build the Executable
-
-Use the `all` target to compile and link all object files into the executable named **`social.exe`**.
-
 To compile and run the project
 
 ```bash
 make all
-make run
+
+#To run the social_media_platform
+./bin/code_app.exe
+
+#To run TASK2B
+./bin/task2b_app.exe
 
 #optional To remove object files
 make clean
