@@ -1,0 +1,44 @@
+# depslib dependency file v1.0
+1761587845 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"platform.h"
+	"post.h"
+	"comment.h"
+	"reply.h"
+
+1761116808 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\comment.c
+	"comment.h"
+	<stdlib.h>
+	<string.h>
+
+1761587526 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\platform.c
+	"platform.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1761118316 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\post.c
+	"post.h"
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
+1761116819 source:c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\reply.c
+	"reply.h"
+	<stdlib.h>
+	<string.h>
+
+1761116727 c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\platform.h
+	<stdbool.h>
+	"post.h"
+
+1761116712 c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\post.h
+	"comment.h"
+
+1761116699 c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\comment.h
+	"reply.h"
+
+1761116686 c:\users\dell\onedrive\desktop\c\dsa_project\socialmediaadt\reply.h
+
